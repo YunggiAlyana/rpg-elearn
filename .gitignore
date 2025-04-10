@@ -1,0 +1,20 @@
+# System files
+.DS_Store
+Thumbs.db
+
+# Logs and cache
+logs/
+storage/temp/
+*.log
+
+# Env
+.env
+
+# Vendor / Node
+vendor/
+node_modules/
+
+# OS trash
+*.bak
+*.swp
+*.swo
