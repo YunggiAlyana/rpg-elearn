@@ -12,10 +12,19 @@ function requireLogin() {
     }
 }
 
-// Fungsi cek role
-function requireRole($role) {
+// Fungsi cek role (bisa untuk satu atau banyak role)
+function requireRole($roles) {
     requireLogin();
-    if ($_SESSION['user']['role'] !== $role) {
+
+    $userRole = $_SESSION['user']['role'];
+
+    // Jika $roles bukan array, ubah jadi array
+    if (!is_array($roles)) {
+        $roles = [$roles];
+    }
+
+    // Cek apakah role user cocok
+    if (!in_array($userRole, $roles)) {
         echo "Akses ditolak: role tidak sesuai.";
         exit;
     }

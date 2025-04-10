@@ -5,7 +5,7 @@ requireRole('admin');
 
 <!DOCTYPE html>
 <html>
-<head>
+<head>  
     <title>Dashboard Admin</title>
 </head>
 <body>
