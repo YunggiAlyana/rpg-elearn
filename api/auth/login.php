@@ -1,7 +1,7 @@
 <?php
 session_start();
-require_once(__DIR__ . '/../includes/config.php');
-require_once(__DIR__ . '/../includes/db.php');
+require_once(__DIR__ . '/../../includes/config.php');
+require_once(__DIR__ . '/../../includes/db.php');
 
 $error = '';
 
@@ -53,5 +53,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="password" name="password" placeholder="Password" required/><br/>
         <button type="submit">Login</button>
     </form>
+    <p><a href="<?= BASE_URL ?>/public/index.php">Kembali ke Halaman Utama</a></p>
 </body>
 </html>
