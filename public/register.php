@@ -1,30 +1,27 @@
 <?php
-require_once '../includes/db.php';
-require_once '../includes/session.php';
+session_start();
+require_once '../includes/db.php'; // pastikan koneksi DB
+require_once '../includes/middleware.php';
 
-$errors = [];
+$isAdmin = isset($_GET['admin']) && isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username']);
-    $passwordRaw = $_POST['password'];
-    $role = 'siswa'; // Default role
+    $username = $_POST['username'];
+    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    $role     = $_POST['role'] ?? 'siswa'; // default siswa kalau nggak ada
 
-    if (empty($username) || empty($passwordRaw)) {
-        $errors[] = "Username dan password wajib diisi.";
-    } else {
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
-        $stmt->execute([$username]);
+    try {
+        $stmt = $db->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, ?)");
+        $stmt->execute([$username, $password, $role]);
 
-        if ($stmt->rowCount() > 0) {
-            $errors[] = "Username sudah terdaftar.";
+        if ($isAdmin) {
+            header("Location: admin/dashboard.php?success=1");
         } else {
-            $hashedPassword = password_hash($passwordRaw, PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, ?)");
-            $stmt->execute([$username, $hashedPassword, $role]);
-
-            header("Location: index.php");
-            exit;
+            header("Location: login.php?registered=1");
         }
+        exit();
+    } catch (PDOException $e) {
+        $error = "Username sudah digunakan atau error lainnya.";
     }
 }
 ?>
@@ -32,25 +29,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Register - RPG Elearn</title>
+    <title>Register</title>
 </head>
 <body>
-    <h2>Form Registrasi Siswa</h2>
+    <h2><?= $isAdmin ? 'Tambah Pengguna oleh Admin' : 'Register Akun Siswa' ?></h2>
+    
+    <?php if (isset($error)) echo "<p style='color:red;'>$error</p>"; ?>
 
-    <?php if (!empty($errors)): ?>
-        <ul style="color:red;">
-            <?php foreach ($errors as $e): ?>
-                <li><?= htmlspecialchars($e) ?></li>
-            <?php endforeach; ?>
-        </ul>
-    <?php endif; ?>
+    <form method="post" action="">
+        <label for="username">Username:</label>
+        <input type="text" name="username" required><br>
 
-    <form method="post">
-        <input type="text" name="username" placeholder="Username" required><br>
-        <input type="password" name="password" placeholder="Password" required><br>
-        <button type="submit">Daftar</button>
-    </form>
-
-    <p>Sudah punya akun? <a href="index.php">Login di sini</a></p>
-</body>
-</html>
+        <label for="password">Password:</
