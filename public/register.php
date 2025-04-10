@@ -6,10 +6,10 @@ $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username']);
-    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    $passwordRaw = $_POST['password'];
     $role = 'siswa'; // Default role
 
-    if (empty($username) || empty($_POST['password'])) {
+    if (empty($username) || empty($passwordRaw)) {
         $errors[] = "Username dan password wajib diisi.";
     } else {
         $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
@@ -18,8 +18,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($stmt->rowCount() > 0) {
             $errors[] = "Username sudah terdaftar.";
         } else {
+            $hashedPassword = password_hash($passwordRaw, PASSWORD_DEFAULT);
             $stmt = $pdo->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, ?)");
-            $stmt->execute([$username, $password, $role]);
+            $stmt->execute([$username, $hashedPassword, $role]);
+
             header("Location: index.php");
             exit;
         }
@@ -27,10 +29,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-<form method="post">
-    <h2>Register</h2>
-    <?php foreach ($errors as $e) echo "<p style='color:red;'>$e</p>"; ?>
-    <input type="text" name="username" placeholder="Username" required><br>
-    <input type="password" name="password" placeholder="Password" required><br>
-    <button type="submit">Daftar</button>
-</form>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register - RPG Elearn</title>
+</head>
+<body>
+    <h2>Form Registrasi Siswa</h2>
+
+    <?php if (!empty($errors)): ?>
+        <ul style="color:red;">
+            <?php foreach ($errors as $e): ?>
+                <li><?= htmlspecialchars($e) ?></li>
+            <?php endforeach; ?>
+        </ul>
+    <?php endif; ?>
+
+    <form method="post">
+        <input type="text" name="username" placeholder="Username" required><br>
+        <input type="password" name="password" placeholder="Password" required><br>
+        <button type="submit">Daftar</button>
+    </form>
+
+    <p>Sudah punya akun? <a href="index.php">Login di sini</a></p>
+</body>
+</html>
